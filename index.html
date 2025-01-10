@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color:rgb(145, 182, 167);">
+    <h1>Learning JavaScript</h1>
+    <div class="typewriter">
+        <p class="text-center">bruh</pclass>
+    </div>
+    <div class="container">
+        <br><br>
+        <div id="map"></div>
+        <div class="form-group">
+            <label for="location">Enter location</label>
+            <br><br>
+            <input type="search" class="form-control" id="autocomplete" placeholder="Enter location" autofocus>
+        </div>
+        <br>
+
+        <div class="form-group">
+            <label for="type">Select Place Type:</label>
+            <br>
+            <select class="form-control" name="" id="type">
+                <option id="school">school</option>
+                <option id="food">restaurant</option>
+                <option id="transit_station">transit_station</option>
+                <!-- cafe meal_takeaway meal_delivery -->
+            </select>
+        </div>
+
+        <br><br>
+
+        <table class="table table-bordered table-striped", id="places"></table>
+    </div>
+</body>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBwK__qV83xVEGlQAFDwWmkj4ozQO0U60s&v=3.58.11a&loading=async&libraries=places&callback=initMap"></script>
+<!-- <script src="https://maps.googleapis.com/maps/api/place?place_id=ChIJN1t_tDeuEmsRUsoyG83frY4&fields=name,photos&key=AIzaSyBwK__qV83xVEGlQAFDwWmkj4ozQO0U60s"></script> -->
+<script>
+    const placeTypes = ["cafe", "restaurant"];
+    let placesFound = [];
+    let outputted = false;
+    searchNearbyPlaces;
+    document.getElementById("type").onchange = searchNearbyPlaces;
+    // console.log(placesFound);
+
+    function initMap(){
+        autocomplete = new google.maps.places.Autocomplete((document.getElementById("autocomplete")), {types: ["geocode"]});
+        autocomplete.addListener("place_changed", searchNearbyPlaces)
+    }
+
+
+    function searchNearbyPlaces(){
+        placesFound = [];
+        outputted = false;
+        document.getElementById("places").innerHTML='';
+        let place = autocomplete.getPlace();
+        console.log(place);
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: place.geometry.location, 
+            zoom: 15
+        });
+
+        service = new google.maps.places.PlacesService(map);
+        for(let type in placeTypes){
+            service.nearbySearch({
+                location: place.geometry.location,
+                radius: "500",
+                type: [placeTypes[type]]
+            }, callback);
+            console.log(placeTypes[type]);
+        }
+    }
+
+    function callback(results, status){
+        if(status === google.maps.places.PlacesServiceStatus.OK){
+            console.log(results.length);
+            for(let i=0; i<results.length; i++){
+                placesFound.push(results[i]);
+                // createMarker(results[i]);
+            }
+        }
+        createMarker(placesFound[Math.floor(Math.random() * 10)]);
+    }
+
+    function createMarker(place){
+        console.log(place);
+        if(!outputted){
+            let table = document.getElementById("places");
+            let row = table.insertRow();
+            let cell1 = row.insertCell(0);
+            cell1.innerHTML = place.name;
+            if(place.photos && outputted===false){
+                let photoUrl = place.photos[0].getUrl();
+                let photoUrl2 = place.rating + place.vicinity;
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+                cell2.innerHTML = `<img width="400" height="400" src="${photoUrl}"/>`
+                cell3.innerHTML = photoUrl2;
+            }
+            else{
+                let photoUrl = "https://via.placeholder.come/150";
+                let cell2 = row.insertCell(1);
+                cell2.innerHTML = `<img width="400" height="400" src="${photoUrl}"/>`
+            }
+        }
+        outputted = true;
+    }
+    console.log(placesFound[2]);
+</script>
+</html>
